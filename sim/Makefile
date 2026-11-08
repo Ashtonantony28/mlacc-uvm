@@ -16,5 +16,7 @@ endif
 ifdef SEED
 export COCOTB_RANDOM_SEED := $(SEED)
 endif
-export UVM_TEST
+ifdef UVM_TEST
+export COCOTB_TEST_FILTER := $(UVM_TEST)$$
+endif
 include $(shell cocotb-config --makefiles)/Makefile.sim
