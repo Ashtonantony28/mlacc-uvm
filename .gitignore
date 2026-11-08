@@ -1,0 +1,7 @@
+sim/sim_build*/
+sim/results*.xml
+sim/*.vcd
+sim/*.fst
+__pycache__/
+.pytest_cache/
+reports/raw/
