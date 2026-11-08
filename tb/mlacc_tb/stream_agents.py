@@ -3,7 +3,7 @@ per-cycle signal monitor used by the IRQ check, protocol checkers and coverage."
 import random
 from dataclasses import dataclass
 
-from cocotb.triggers import RisingEdge, FallingEdge
+from cocotb.triggers import RisingEdge, FallingEdge, NullTrigger
 from pyuvm import (uvm_sequence_item, uvm_driver, uvm_monitor, uvm_agent,
                    uvm_sequencer, uvm_analysis_port, uvm_component, ConfigDB)
 
@@ -96,9 +96,15 @@ class CmdDriver(uvm_driver):
                 if fire:
                     break
             self.seq_item_port.item_done()
-            ok, item = self.seq_item_port.try_next_item()       # back-to-back if available
-            if not ok:
-                item = None
+            # Give the sequence a few zero-time scheduler slots to supply the next item so
+            # traffic can be truly back-to-back (coverage hole cg_flow.cmd_back_to_back).
+            item = None
+            for _ in range(8):
+                ok, nxt = self.seq_item_port.try_next_item()
+                if ok:
+                    item = nxt
+                    break
+                await NullTrigger()
 
 
 class CmdMonitor(uvm_monitor):
@@ -142,6 +148,8 @@ class RspResponder(uvm_component):
         await self.cfg.wait_reset()
         stall_left = 0
         while True:
+            if not int(d.rst_n.value):
+                stall_left = 0                       # a reset ends any stall burst
             if stall_left == 0 and random.random() < self.cfg.rsp_stall_prob:
                 stall_left = random.randint(*self.cfg.rsp_stall_burst)
             if stall_left:
