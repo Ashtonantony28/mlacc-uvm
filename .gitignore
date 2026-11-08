@@ -5,3 +5,4 @@ sim/*.fst
 __pycache__/
 .pytest_cache/
 reports/raw/
+sim/sva_build*/

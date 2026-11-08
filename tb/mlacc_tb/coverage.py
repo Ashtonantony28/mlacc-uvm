@@ -22,12 +22,14 @@ class Coverpoint:
     def __init__(self, name, bins):
         self.name, self.bins = name, list(bins)
         self.hits = {b: 0 for b in self.bins}
+        self.illegal = []          # values outside every bin (SV illegal_bins semantics)
 
     def sample(self, b):
         if b is None:
             return
         if b not in self.hits:
-            raise KeyError(f"coverpoint {self.name}: value {b!r} has no bin")
+            self.illegal.append(b)
+            return
         self.hits[b] += 1
 
 
@@ -226,6 +228,12 @@ class MlaccCoverage(uvm_component):
                 hit = sum(1 for v in it.hits.values() if v)
                 out[f"{g.name}.{n}"] = (hit, len(it.hits))
         return out
+
+    def check_phase(self):
+        bad = [(g.name, n, it.illegal[:3]) for g in (self.cg_cmd, self.cg_flow, self.cg_csr)
+               for n, it in g.items.items() if getattr(it, "illegal", None)]
+        if bad:
+            raise AssertionError(f"illegal coverage bins hit: {bad}")
 
     def report_phase(self):
         s = self.summary()

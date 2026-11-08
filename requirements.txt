@@ -1,0 +1,4 @@
+cocotb==2.1.0
+pyuvm==5.0.0
+numpy
+pytest

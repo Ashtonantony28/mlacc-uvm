@@ -38,8 +38,16 @@ module mlacc_csr
   assign apb_wr = psel & penable &  pwrite;
   assign apb_rd = psel & penable & ~pwrite;
 
+  // Full 12-bit decode. MUTANT_ADDR_ALIAS decodes only paddr[7:0], so 0x100 aliases ID.
+  logic [11:0] dec_addr;
+`ifdef MUTANT_ADDR_ALIAS
+  assign dec_addr = {4'h0, paddr[7:0]};
+`else
+  assign dec_addr = paddr;
+`endif
+
   always_comb begin
-    unique case (paddr)
+    unique case (dec_addr)
       A_ID, A_VERSION, A_CTRL, A_STATUS, A_MLSTAT, A_IRQ_STATUS,
       A_CMD_COUNT, A_RSP_COUNT, A_SCRATCH: addr_ok = 1'b1;
       default:                             addr_ok = 1'b0;
@@ -53,11 +61,15 @@ module mlacc_csr
   always_comb begin
     prdata = 32'h0;
     if (apb_rd) begin
-      unique case (paddr)
+      unique case (dec_addr)
         A_ID:         prdata = MLACC_ID;
         A_VERSION:    prdata = MLACC_VERSION;
         A_CTRL:       prdata = ctrl_q;
+`ifdef MUTANT_STATUS_LEVEL
+        A_STATUS:     prdata = {25'h0, fifo_level, 2'b00, busy};      // MUTANT: field at [6:3]
+`else
         A_STATUS:     prdata = {24'h0, fifo_level, 3'b000, busy};
+`endif
         A_MLSTAT:     prdata = {31'h0, mlstat_sat_q};
         A_IRQ_STATUS: prdata = {29'h0, irq_sts_q};
         A_CMD_COUNT:  prdata = cmd_cnt_q;

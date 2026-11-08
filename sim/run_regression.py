@@ -56,7 +56,9 @@ def run_one(test, seed, mutant, out_dir, timeout):
         cases = root.findall(".//testcase")
         passed = bool(cases) and not any(c.find("failure") is not None or c.find("error") is not None
                                          for c in cases)
-    first = next((ln.strip() for ln in out.splitlines() if "first:" in ln or "AssertionError" in ln), "")
+    lines = [ln.strip() for ln in out.splitlines()]
+    first = next((ln for ln in lines if ln.startswith("AssertionError:")),
+                 next((ln for ln in lines if ln.startswith(("KeyError", "RuntimeError", "TIMEOUT"))), ""))
     return dict(test=test, seed=seed, mutant=mutant, passed=passed, secs=time.time() - t0,
                 log=log, first_error=first[:300])
 

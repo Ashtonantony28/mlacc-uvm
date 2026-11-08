@@ -1,0 +1,33 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install simulators
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq iverilog verilator
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Install Python deps
+        run: pip install -r requirements.txt
+      - name: Lint RTL + SVA (Verilator -Wall)
+        run: |
+          cd rtl
+          verilator --lint-only -Wall lint.vlt -f files.f --top-module mlacc_top
+          verilator --lint-only -Wall --assert lint.vlt -f files.f mlacc_sva.sv --top-module mlacc_top
+      - name: Unit tests (reference model)
+        run: python -m pytest -q tb/unit
+      - name: SVA run (Verilator, bound assertions)
+        run: sim/run_sva.sh 1
+      - name: UVM regression (pyuvm + cocotb + Icarus)
+        run: python sim/run_regression.py -j 4
+      - name: Coverage report
+        run: python sim/coverage_report.py reports/raw/regression/cov --md reports/COVERAGE.md
+      - name: Mutation campaign (every injected bug must be caught)
+        run: python sim/mutants.py -j 4 --md reports/MUTATION.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reports
+          path: reports/

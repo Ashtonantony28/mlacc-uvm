@@ -69,11 +69,31 @@ module mlacc_top
   // ---------------- datapath (unchanged Vortex-V unit) ----------------
   logic [XLEN-1:0] dp_result;
   logic            dp_sat;
+  // Mutation hooks sit on the datapath *inputs* so vortex_xmlacc.sv stays byte-identical
+  // to the Vortex-V source.
+  logic [2:0]      dp_op;
+  logic [XLEN-1:0] dp_rs2, dp_rs3;
+`ifdef MUTANT_DOT8SU_AS_U
+  assign dp_op  = (s1_op == 3'b010) ? 3'b001 : s1_op;                 // MUTANT: dot8su decoded as dot8u
+`else
+  assign dp_op  = s1_op;
+`endif
+`ifdef MUTANT_RQS_SHIFT_5BIT
+  assign dp_rs2 = (s1_op == 3'b101) ? (s1_rs2 & ~64'h20) : s1_rs2;     // MUTANT: shift amount bit 5 lost
+`else
+  assign dp_rs2 = s1_rs2;
+`endif
+`ifdef MUTANT_MACC_ACC32
+  assign dp_rs3 = {{32{s1_rs3[31]}}, s1_rs3[31:0]};                    // MUTANT: 32-bit accumulator
+`else
+  assign dp_rs3 = s1_rs3;
+`endif
+
   vortex_xmlacc #(.XLEN(XLEN)) u_dp (
-    .op     (vortex_pkg::xmlacc_op_e'(s1_op)),
+    .op     (vortex_pkg::xmlacc_op_e'(dp_op)),
     .rs1    (s1_rs1),
-    .rs2    (s1_rs2),
-    .rs3    (s1_rs3),
+    .rs2    (dp_rs2),
+    .rs3    (dp_rs3),
     .result (dp_result),
     .sat    (dp_sat)
   );

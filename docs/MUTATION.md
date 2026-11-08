@@ -1,0 +1,21 @@
+# Mutation (bug-injection) campaign
+
+Baseline (no mutant): all tests pass. **15/15 mutants killed** (mutation score 100%). Each mutant is one `ifdef` in `rtl/`; run with `python3 sim/mutants.py`.
+
+| Mutant | Area | Injected bug | Killed by | First failure reported |
+|---|---|---|---|---|
+| `MUTANT_W1C_AS_RW` | CSR | MLSTAT.SAT behaves as plain RW instead of W1C | reg_test, csr_traffic_test | cycle_model: 2 error(s); first: [cyc 934] APB read 0x010 = 0x00000000, model 0x00000001 |
+| `MUTANT_DONE_LOST` | CSR | IRQ_STATUS.DONE: a W1C in the same cycle as a new result wins (event lost) | csr_traffic_test | cycle_model: 23 error(s); first: [cyc 856] irq=0, model expects 1 (IRQ_STATUS=0b001 CTRL=0xf) |
+| `MUTANT_RSP_COUNT` | CSR | RSP_COUNT saturates at 7 | csr_traffic_test | cycle_model: 48 error(s); first: [cyc 153] APB read 0x01c = 0x00000007, model 0x00000030 |
+| `MUTANT_IRQ_MASK` | CSR | irq ignores the CTRL.IRQ_EN_* enables | smoke_test, reg_test, corner_test, irq_test, random_test, stress_test, csr_traffic_test, reset_midflight_test | cycle_model: 58 error(s); first: [cyc 13] irq=1, model expects 0 (IRQ_STATUS=0b001 CTRL=0x1) |
+| `MUTANT_SCRATCH_BIT` | CSR | SCRATCH bit 15 stuck at 0 | reg_test, csr_traffic_test | cycle_model: 34 error(s); first: [cyc 128] APB read 0x020 = 0x00000000, model 0x00008000 |
+| `MUTANT_ADDR_ALIAS` | CSR | APB decodes only PADDR[7:0]; 0x100 aliases ID, no PSLVERR | reg_test | cycle_model: 3 error(s); first: [cyc 899] PSLVERR=0 at 0x100, expected 1 |
+| `MUTANT_STATUS_LEVEL` | CSR | STATUS.FIFO_LEVEL reported at bits [6:3] instead of [7:4] | csr_traffic_test | cycle_model: 52 error(s); first: [cyc 220] APB read 0x00c = 0x00000019, model 0x00000031 |
+| `MUTANT_CREDIT_OFF_BY_ONE` | Flow | cmd_ready credit check uses <= : FIFO can overflow | corner_test, random_test, stress_test, csr_traffic_test, reset_midflight_test | scoreboard: 15 error(s); first: MISMATCH for CMD tag= 13 dot8u   rs1=0x7f7f7f7f7f7f7f7f rs2=0x8080808080808080 rs3=0x0000000000000000 [cyc 23] |
+| `MUTANT_RSP_NO_HOLD` | Flow | FIFO pops whether or not rsp_ready is high | corner_test, random_test, stress_test, csr_traffic_test, reset_midflight_test | scoreboard: 125 error(s); first: MISMATCH for CMD tag=  5 dot8    rs1=0x8080808080808080 rs2=0x7f7f7f7f7f7f7f7f rs3=0x0000000000000000 [cyc 15] |
+| `MUTANT_TAG_SWAP` | Flow | tag LSB flipped for macc/rqs results | smoke_test, reg_test, corner_test, irq_test, random_test, stress_test, csr_traffic_test, reset_midflight_test | scoreboard: 24 error(s); first: MISMATCH for CMD tag=  3 macc    rs1=0x7f7f7f7f7f7f7f7f rs2=0x7f7f7f7f7f7f7f7f rs3=0x0000000000000005 [cyc 13] |
+| `MUTANT_ILLEGAL_OP` | Datapath | illegal op codes return the dot8 result instead of 0 | smoke_test, corner_test, irq_test, random_test, stress_test, csr_traffic_test | scoreboard: 3 error(s); first: MISMATCH for CMD tag= 10 ILLEGAL6 rs1=0x5851cee230369fe3 rs2=0x7f7f7f7f7f7f7f7f rs3=0xa7497b6e4fa78677 [cyc 20] |
+| `MUTANT_SAT_STUCK` | Datapath | rqs SAT flag never reported | smoke_test, reg_test, corner_test, irq_test, random_test, stress_test, csr_traffic_test, reset_midflight_test | scoreboard: 8 error(s); first: MISMATCH for CMD tag=  4 rqs     rs1=0x0000000000100000 rs2=0x0000000000000004 rs3=0x0000000000000000 [cyc 14] |
+| `MUTANT_DOT8SU_AS_U` | Datapath | dot8su decoded as dot8u (sign of rs1 lanes lost) | smoke_test, corner_test, random_test, stress_test, csr_traffic_test, reset_midflight_test | scoreboard: 6 error(s); first: MISMATCH for CMD tag=  2 dot8su  rs1=0x80808080808080ff rs2=0xff00ff00ff00ff00 rs3=0x0000000000000000 [cyc 12] |
+| `MUTANT_RQS_SHIFT_5BIT` | Datapath | rqs shift amount bit 5 dropped (shifts >= 32 wrong) | smoke_test, corner_test, random_test, stress_test, csr_traffic_test, reset_midflight_test | scoreboard: 1 error(s); first: MISMATCH for CMD tag= 18 rqs     rs1=0x110d5f03224af036 rs2=0x558613bf4db002bf rs3=0x1345bf2195c5a3ae [cyc 28] |
+| `MUTANT_MACC_ACC32` | Datapath | macc accumulator truncated to 32 bits | smoke_test, corner_test, random_test, stress_test, csr_traffic_test, reset_midflight_test | scoreboard: 3 error(s); first: MISMATCH for CMD tag= 42 macc    rs1=0x517ca6f2b002b2b7 rs2=0xffffffffffffffff rs3=0x7fffffffffff4dc4 [cyc 52] |
