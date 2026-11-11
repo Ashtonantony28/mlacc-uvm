@@ -4,7 +4,7 @@
   python3 sim/run_regression.py                 # default regression (see REGRESSION)
   python3 sim/run_regression.py --quick         # one seed per test (CI)
   python3 sim/run_regression.py --mutant MUTANT_X --tests smoke_test,reg_test
-Exit status is non-zero if any test fails (expected-fail tests count as pass when they fail).
+Exit status is non-zero if any test fails.
 """
 import argparse
 import os
@@ -21,7 +21,7 @@ ROOT = os.path.dirname(SIM)
 REGRESSION = {
     "smoke_test": 2, "reg_test": 1, "corner_test": 2, "irq_test": 1,
     "random_test": 10, "stress_test": 4, "csr_traffic_test": 6, "reset_midflight_test": 3,
-    "known_issue_vtx_rqs_001_test": 1,
+    "rqs_overflow_test": 1,
 }
 
 

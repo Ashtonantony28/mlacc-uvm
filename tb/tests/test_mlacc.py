@@ -166,11 +166,10 @@ class random_test(MlaccBaseTest):
         await self.run_cmds(RandCmdSeq(n=self.N))
 
 
-@pyuvm.test(expect_fail=True)
-class known_issue_vtx_rqs_001_test(MlaccBaseTest):
-    """Reproduces VTX-RQS-001 with the waiver OFF. Expected to FAIL while the bug is
-    in Vortex-V's vortex_xmlacc; if it starts passing, the RTL was fixed and the
-    waiver in scoreboard.known_issue() should be removed."""
+@pyuvm.test()
+class rqs_overflow_test(MlaccBaseTest):
+    """Regression for VTX-RQS-001 (fixed in Vortex-V PR #2): rqs inputs within
+    2^(sh-1) of INT64_MAX, checked with the waiver OFF."""
 
     def configure(self, cfg):
         cfg.waive_known_issues = False

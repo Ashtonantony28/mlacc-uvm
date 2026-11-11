@@ -22,7 +22,7 @@ Protocol rules also exist as **SystemVerilog assertions** run under Verilator.
 | Functional coverage | **150/150 bins (100%)**, 21 coverpoints and crosses — [docs/COVERAGE.md](docs/COVERAGE.md) |
 | Bug injection | **15/15 injected RTL bugs caught** — [docs/MUTATION.md](docs/MUTATION.md) |
 | SVA | 6 assertions, 4 environment assumptions and 3 covers, bound into the DUT, run with Verilator `--assert` |
-| Real bug found | **VTX-RQS-001** in Vortex-V's `rqs`, found by random stimulus on the very first run — [docs/KNOWN-ISSUES.md](docs/KNOWN-ISSUES.md) |
+| Real bug found | **VTX-RQS-001** in Vortex-V's `rqs`, found by random stimulus on the very first run, now fixed upstream (Vortex-V PR #2) — [docs/KNOWN-ISSUES.md](docs/KNOWN-ISSUES.md) |
 
 ## Testbench architecture
 
@@ -104,7 +104,7 @@ VERILATOR=/path/to/verilator UVM_HOME=/path/to/uvm-verilator/src sim/run_sv_uvm.
 | `irq_test` | each IRQ source with its enable on/off, W1C de-assertion |
 | `csr_traffic_test` | register polling, W1C clears and enable toggling concurrent with traffic |
 | `reset_midflight_test` | reset with a full FIFO, clean restart |
-| `known_issue_vtx_rqs_001_test` | reproduces VTX-RQS-001 with the waiver off (expected fail) |
+| `rqs_overflow_test` | regression for VTX-RQS-001: rqs inputs next to INT64_MAX |
 
 ## Running
 

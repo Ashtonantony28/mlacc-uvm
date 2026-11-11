@@ -34,7 +34,7 @@ MUTANTS = {
     "MUTANT_MACC_ACC32":        ("Datapath", "macc accumulator truncated to 32 bits"),
 }
 TESTS = ["smoke_test", "reg_test", "corner_test", "irq_test", "random_test", "stress_test",
-         "csr_traffic_test", "reset_midflight_test"]
+         "csr_traffic_test", "reset_midflight_test", "rqs_overflow_test"]
 
 
 def campaign(mutant, out):

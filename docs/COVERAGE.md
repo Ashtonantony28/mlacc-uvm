@@ -1,6 +1,6 @@
 # Functional coverage
 
-Merged from 29 runs. **150/150 bins = 100.0%**
+Merged from 30 runs. **150/150 bins = 100.0%**
 
 | Coverpoint / cross | Bins hit | % | Holes |
 |---|---|---|---|

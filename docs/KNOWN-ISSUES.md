@@ -1,6 +1,6 @@
 # Known issues found by this environment
 
-## VTX-RQS-001 — `mlacc.rqs` rounding add wraps at 64 bits (Vortex-V RTL vs golden model)
+## VTX-RQS-001 — `mlacc.rqs` rounding add wraps at 64 bits (Vortex-V RTL vs golden model) — FIXED
 
 - **Found:** 2026-11-08, first run of `smoke_test` (random `rqs` operand), then reproduced
   by the directed `known_issue_vtx_rqs_001_test`.
@@ -17,6 +17,9 @@
 - **Suggested fix (Vortex-V):** do the add in 65 bits:
   `logic signed [XLEN:0] sum = {x_s[XLEN-1], x_s} + rnd; t = sum >>> sh;`
   or amend XMLACC-SPEC to state 64-bit wrapping and change the model.
-- **Status in this bench:** waived in the scoreboard (`scoreboard.known_issue`), counted and
+- **Fixed:** 2026-11-11 in Vortex-V PR #2 (round-add and shift now in XLEN+1 bits). `rtl/vortex_xmlacc.sv`
+  was re-synced from Vortex-V `main`; the waiver is off by default and `rqs_overflow_test` (pyuvm)
+  plus the SV-UVM scoreboard now pass on these inputs.
+- **Status before the fix:** waived in the scoreboard (`scoreboard.known_issue`), counted and
   reported as a warning on every run; `known_issue_vtx_rqs_001_test` runs with the waiver off
   and is marked expected-fail, so a fix shows up as an unexpected pass.

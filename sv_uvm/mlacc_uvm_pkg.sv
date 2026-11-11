@@ -58,7 +58,7 @@ package mlacc_uvm_pkg;
     `uvm_object_utils(mlacc_cfg)
     int unsigned cmd_idle_pct  = 20;   // % chance of an idle cycle before a command
     int unsigned rsp_stall_pct = 15;   // % chance rsp_ready is low in a cycle
-    bit          waive_known   = 1;
+    bit          waive_known   = 0;   // VTX-RQS-001 fixed in Vortex-V PR #2
     function new(string name = "mlacc_cfg"); super.new(name); endfunction
   endclass
 

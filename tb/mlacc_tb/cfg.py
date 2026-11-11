@@ -23,7 +23,7 @@ class MlaccCfg:
         self.rsp_stall_prob = 0.0       # chance rsp_ready is low in a cycle
         self.rsp_stall_burst = (1, 1)   # stall burst length range when stalling
         self.coverage_enabled = True
-        self.waive_known_issues = True  # see scoreboard.known_issue / docs/KNOWN-ISSUES.md
+        self.waive_known_issues = False  # VTX-RQS-001 fixed upstream; see scoreboard.known_issue / docs/KNOWN-ISSUES.md
         self.reset_done = False
 
     async def start_clock(self, period_ns=10):
