@@ -31,3 +31,34 @@ jobs:
         with:
           name: reports
           path: reports/
+
+  sv-uvm:
+    # SystemVerilog UVM bench (sv_uvm/) on Verilator 5.054 + Accellera UVM 2017 (Antmicro's
+    # Verilator-compatible tree). Verilator is built from source once and cached.
+    runs-on: ubuntu-24.04
+    env:
+      VERILATOR: /home/runner/verilator-5.054/bin/verilator
+      UVM_HOME: ${{ github.workspace }}/uvm-verilator/src
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build deps
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq z3 help2man flex bison libfl-dev autoconf ccache
+      - uses: actions/cache@v4
+        id: vl
+        with: { path: /home/runner/verilator-5.054, key: verilator-5.054-ubuntu24 }
+      - name: Build Verilator 5.054
+        if: steps.vl.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 -b v5.054 https://github.com/verilator/verilator /tmp/vl
+          cd /tmp/vl && autoconf && ./configure --prefix=/home/runner/verilator-5.054
+          make -j4 && make install
+      - name: Fetch UVM (pinned)
+        run: |
+          git clone https://github.com/antmicro/uvm-verilator uvm-verilator
+          git -C uvm-verilator checkout 795b5f263c5d440c26e6d3598b406d44dd23fbd9
+      - name: SV-UVM tests
+        run: |
+          for t in smoke_test reg_builtin_test random_test stress_test; do
+            sim/run_sv_uvm.sh $t 1 > /dev/null || { echo "FAIL $t"; tail -40 sim/sv_uvm_build/$t.s1.log; exit 1; }
+            echo "PASS $t"
+          done
