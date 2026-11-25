@@ -24,6 +24,15 @@ Protocol rules also exist as **SystemVerilog assertions** run under Verilator.
 | SVA | 6 assertions, 4 environment assumptions and 3 covers, bound into the DUT, run with Verilator `--assert` |
 | Real bug found | **VTX-RQS-001** in Vortex-V's `rqs`, found by random stimulus on the very first run, now fixed upstream (Vortex-V PR #2) — [docs/KNOWN-ISSUES.md](docs/KNOWN-ISSUES.md) |
 
+![Coverage closure over the regression](docs/media/coverage-closure.gif)
+
+![MLACC waveform: APB CSR traffic, command/result handshakes, FIFO level and interrupt](docs/media/waveform-csr-traffic.png)
+
+![Which tests catch which injected bug](docs/media/mutation-matrix.png)
+
+<sub>All three come from real runs of this bench: the 30-run regression's coverage files, an Icarus waveform of
+`csr_traffic_test` (seed 1000), and the mutation table in docs/MUTATION.md. Regenerate: `python3 sim/media.py`.</sub>
+
 ## Testbench architecture
 
 ```mermaid
